@@ -1,0 +1,24 @@
+{
+  "author" : "noyobo",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "handler" : "exportArtboards",
+      "shortcut" : "ctrl shift e",
+      "name" : "Export",
+      "identifier" : "Export"
+    }
+  ],
+  "menu" : {
+    "isRoot" : false,
+    "items" : [
+      "Export"
+    ],
+    "title" : "Caliper" 
+  },
+  "identifier" : "com.noyobo.sketch-ruler",
+  "version" : "0.1.0",
+  "description" : "",
+  "authorEmail" : "noyobo@gmail.com",
+  "name" : "sketch-caliper"
+}

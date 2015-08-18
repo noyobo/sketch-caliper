@@ -1,0 +1,8 @@
+@import 'lib/I18N.js';
+@import 'lib/caliper.js';
+
+// 导出画板
+function exportArtboards(context) {
+  caliper.init(context)
+  caliper.export()
+};
