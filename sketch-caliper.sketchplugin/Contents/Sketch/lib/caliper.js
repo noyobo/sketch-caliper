@@ -12,17 +12,35 @@ var caliper = {
       this.alert(I18N.NOT_ARTBOARDS)
       return false
     }
-    var artboardsData = []
-    artboards = artboards.objectEnumerator()
 
     var savePath = this.getSavePath()
     if (!savePath) {
       return false
     }
+    var currentPageName = this.trim(this.page.name())
+    var parentPagePath = savePath.stringByAppendingPathComponent(currentPageName);
+    var artboardsPath = parentPagePath.stringByAppendingPathComponent('artboards');
 
-    var artboardsPath = savePath.stringByAppendingPathComponent('artboards');
-    [[NSFileManager defaultManager] createDirectoryAtPath:artboardsPath withIntermediateDirectories:true attributes:nil error:nil];
+    var pages = this.document.pages()
+    pages = pages.objectEnumerator()
+    var pagesData = []
+    while(page = pages.nextObject()){
+      print(page.artboards())
+      var pageData = {
+        'id': this.toJSString(page.objectID()),
+        'name': this.trim(page.name()),
+        'artboards': page.artboards().count()
+      }
+      pagesData.push(pageData)
+    }
 
+    var pagesJsonData = this.toJSJson(pagesData)
+    this.writeFile(savePath, 'pages.js', pagesJsonData)
+
+
+    this.nsFileManager(artboardsPath)
+    var artboardsData = []
+    artboards = artboards.objectEnumerator()
     while (msArtboard = artboards.nextObject()) {
       var artboardId = msArtboard.objectID()
       var artboardName = msArtboard.name()
@@ -33,6 +51,8 @@ var caliper = {
 
       // var imageBase64 = this.layerConvertBase64(msArtboard)
       var artboardData = {
+        'x': artboardFrame.x(),
+        'y': artboardFrame.y(),
         'id': this.toJSString(artboardId),
         'name': this.toJSString(artboardName),
         'width': artboardFrame.width(),
@@ -42,8 +62,8 @@ var caliper = {
       artboardsData.push(artboardData)
     }
 
-    var artboardsJsonData = NSString.stringWithString(JSON.stringify(artboardsData))
-    this.writeFile(savePath, 'artboards.js', artboardsJsonData)
+    var artboardsJsonData = this.toJSJson(artboardsData)
+    this.writeFile(parentPagePath, 'artboards.js', artboardsJsonData)
     
     this.message(I18N.EXPORT_COMPLETE)
   },
@@ -60,6 +80,12 @@ var caliper = {
     var scope = container.children()
     return scope.filteredArrayUsingPredicate(predicate)
   },
+  trim: function(str) {
+    return str.replace(/\s+/g, '-')
+  },
+  toJSJson: function(data) {
+    return NSString.stringWithString(JSON.stringify(data))
+  },
   toJSString: function(str) {
     return new String(str).toString()
   },
@@ -68,11 +94,12 @@ var caliper = {
     var filePath = this.document.fileURL() ? this.document.fileURL().path().stringByDeletingLastPathComponent() : "~"
     var fileName = this.document.displayName().stringByDeletingPathExtension()
     var savePanel = NSSavePanel.savePanel()
-
+    print(fileName)
     savePanel.setTitle(I18N.NAME)
     savePanel.setNameFieldLabel(I18N.EXPORT_LABEL)
     savePanel.setPrompt(I18N.EXPORT)
     savePanel.setCanCreateDirectories(true)
+    savePanel.setShowsTagField(false);
     savePanel.setNameFieldStringValue(fileName)
 
     if (savePanel.runModal() != NSOKButton) {
@@ -80,14 +107,13 @@ var caliper = {
     }
 
     var savePathUrl = savePanel.URL().path()
-
-    [[NSFileManager defaultManager]
-      createDirectoryAtPath: savePathUrl
-      withIntermediateDirectories: true
-      attributes: nil
-      error: nil]
+    this.nsFileManager(savePathUrl)
 
     return savePathUrl
+  },
+
+  nsFileManager: function(url) {
+    [[NSFileManager defaultManager] createDirectoryAtPath: url withIntermediateDirectories: true attributes: nil error: nil]
   },
   // 写入文件
   writeFile: function(basepath, filename, context) {
