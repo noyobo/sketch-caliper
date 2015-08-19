@@ -8,12 +8,13 @@ var I18NMap = {
   },
   "zh-Hans": {
     NAME: 'Sketch Caliper',
-    NOT_ARTBOARDS: '至少含有一个画板╮(╯▽╰)╭',
+    NOT_ARTBOARDS: '至少含有一个画板 ╮(╯▽╰)╭',
     OK: '确定',
     CANCEl: '取消',
     EXPORT: '导出',
+    EXPORT_WAIT: '正在导出, 请稍后 (´ε｀ )♡',
     EXPORT_LABEL: '导出到:',
-    EXPORT_COMPLETE: "导出完毕(●'◡'●)ﾉ♥"
+    EXPORT_COMPLETE: "导出完毕 (●'◡'●)ﾉ♥"
   }
 }
 

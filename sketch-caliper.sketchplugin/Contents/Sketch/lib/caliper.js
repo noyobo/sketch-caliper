@@ -17,6 +17,7 @@ var caliper = {
     if (!savePath) {
       return false
     }
+    this.message(I18N.EXPORT_WAIT)
     var currentPageName = this.trim(this.page.name())
     var parentPagePath = savePath.stringByAppendingPathComponent(currentPageName);
     var artboardsPath = parentPagePath.stringByAppendingPathComponent('artboards');
@@ -25,7 +26,6 @@ var caliper = {
     pages = pages.objectEnumerator()
     var pagesData = []
     while(page = pages.nextObject()){
-      print(page.artboards())
       var pageData = {
         'id': this.toJSString(page.objectID()),
         'name': this.trim(page.name()),
@@ -34,7 +34,7 @@ var caliper = {
       pagesData.push(pageData)
     }
 
-    var pagesJsonData = this.toJSJson(pagesData)
+    var pagesJsonData = this.toJSJson(pagesData, 'pagesData');
     this.writeFile(savePath, 'pages.js', pagesJsonData)
 
 
@@ -62,7 +62,7 @@ var caliper = {
       artboardsData.push(artboardData)
     }
 
-    var artboardsJsonData = this.toJSJson(artboardsData)
+    var artboardsJsonData = this.toJSJson(artboardsData, 'artboardsData')
     this.writeFile(parentPagePath, 'artboards.js', artboardsJsonData)
     
     this.message(I18N.EXPORT_COMPLETE)
@@ -81,10 +81,10 @@ var caliper = {
     return scope.filteredArrayUsingPredicate(predicate)
   },
   trim: function(str) {
-    return str.replace(/\s+/g, '-')
+    return str.trim().replace(/\s+/g, '-')
   },
-  toJSJson: function(data) {
-    return NSString.stringWithString(JSON.stringify(data))
+  toJSJson: function(data, dataScope) {
+    return NSString.stringWithString('var ' + dataScope + '=' + JSON.stringify(data))
   },
   toJSString: function(str) {
     return new String(str).toString()
@@ -94,7 +94,7 @@ var caliper = {
     var filePath = this.document.fileURL() ? this.document.fileURL().path().stringByDeletingLastPathComponent() : "~"
     var fileName = this.document.displayName().stringByDeletingPathExtension()
     var savePanel = NSSavePanel.savePanel()
-    print(fileName)
+
     savePanel.setTitle(I18N.NAME)
     savePanel.setNameFieldLabel(I18N.EXPORT_LABEL)
     savePanel.setPrompt(I18N.EXPORT)
