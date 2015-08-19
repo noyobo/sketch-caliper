@@ -59,6 +59,23 @@ var caliper = {
         'height': artboardFrame.height(),
         'bgImage': this.toJSString(relativePath)
       }
+
+      var layers = this.filter(msArtboard, MSArtboardGroup)
+
+      layers = layers.objectEnumerator()
+      while(msLayer = layers.nextObject()) {
+        var msGroup = msLayer.parentGroup();
+        var layerName = msLayer.name()
+        if (!this.isVisible(msLayer)) {
+          continue
+        }
+        if (!this.isExportable(msLayer)) {
+          continue
+        }
+        print(msLayer)
+        // print(msLayer.absoluteRect())
+      }
+
       artboardsData.push(artboardData)
     }
 
@@ -80,6 +97,50 @@ var caliper = {
     var scope = container.children()
     return scope.filteredArrayUsingPredicate(predicate)
   },
+  filter: function methodName(container, name, field) {
+    var field = field || 'class'
+    if (typeof container === 'undefined' || container == nil) {
+      return NSArray.array()
+    }
+    var predicate = NSPredicate.predicateWithFormat('(' + field + ' != %@)', name)
+    var scope = container.children()
+    return scope.filteredArrayUsingPredicate(predicate)
+  },
+  /**
+   * 递归查询元素是否可见
+   * @param  {MSLayer}  layer MSLayer对象
+   * @return {Boolean}
+   */
+  isVisible: function(layer) {
+    var msGroup = layer.parentGroup();
+    if (this.is(msGroup, MSArtboardGroup)) {
+      return layer.isVisible()
+    }
+    if (msGroup.isVisible()) {
+      return this.isVisible(msGroup)
+    }
+    return 0
+  },
+  /**
+   * 是否为可导出css的元素
+   * @param  {MSLayer}  layer MSLayer对象
+   * @return {Boolean}
+   */
+  isExportable: function(layer) {
+    return this.is(layer, MSTextLayer) ||
+     this.is(layer, MSShapeGroup) ||
+     this.is(layer, MSBitmapLayer) ||
+     this.is(layer, MSSliceLayer) ||
+     this.is(layer, MSLayerGroup) && this.hasExportSizes(layer)
+  },
+  is: function(layer, theClass){
+    var klass = [layer class];
+    return klass === theClass;
+  },
+  hasExportSizes: function(layer){
+    return layer.exportOptions().sizes().count() > 0;
+  },
+  // js 相关操作
   trim: function(str) {
     return str.trim().replace(/\s+/g, '-')
   },
